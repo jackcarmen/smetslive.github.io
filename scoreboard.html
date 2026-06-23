@@ -19,7 +19,7 @@ body {
   margin: auto;
 }
 
-/* HEADER GRID */
+/* HEADER */
 #header {
   width: 100%;
 }
@@ -43,12 +43,14 @@ body {
   font-weight: bold;
 }
 
+/* RECORD + VENUE */
 #venue,
 #awayRecord,
 #homeRecord {
   text-align: center;
   font-size: 12px;
   color: #ccc;
+  margin-top: 4px;
 }
 
 /* SCORE */
@@ -159,7 +161,6 @@ body {
 </div>
 
 <script>
-
 async function loadScore() {
   try {
     const res = await fetch(
@@ -169,6 +170,7 @@ async function loadScore() {
     const game = sched.dates[0]?.games[0];
     if (!game) return;
 
+    // ✅ Team info
     document.getElementById("teams").innerText =
       game.teams.away.team.name + " @ " +
       game.teams.home.team.name;
@@ -191,39 +193,100 @@ async function loadScore() {
       game.teams.home.leagueRecord.wins + "-" +
       game.teams.home.leagueRecord.losses;
 
+    // ✅ Live data
     const liveRes = await fetch(
       `https://statsapi.mlb.com/api/v1.1/game/${game.gamePk}/feed/live`
     );
     const live = await liveRes.json();
 
-    const linescore = live.liveData.linescore;
     const status = game.status.detailedState;
+    const linescore = live.liveData?.linescore;
 
-    document.getElementById("score").innerText =
-      linescore.teams.away.runs + " - " +
-      linescore.teams.home.runs;
+    // ✅ Score
+    if (linescore) {
+      document.getElementById("score").innerText =
+        linescore.teams.away.runs + " - " +
+        linescore.teams.home.runs;
+    }
 
+    // ✅ Inning / Status
     const inningEl = document.getElementById("inning");
     inningEl.className = "";
 
-    if (status === "Final") {
+    const gameTime = new Date(game.gameDate).toLocaleTimeString([], {
+      hour: "numeric",
+      minute: "2-digit"
+    });
+
+    if (!linescore) {
+      inningEl.innerText = gameTime;
+      inningEl.classList.add("inning-scheduled");
+
+    } else if (status === "Final") {
       inningEl.innerText = "Final";
       inningEl.classList.add("inning-final");
+
     } else if (status.includes("In Progress")) {
       inningEl.innerText =
-        linescore.inningState + " " + linescore.currentInningOrdinal;
+        linescore.inningState + " " +
+        linescore.currentInningOrdinal;
       inningEl.classList.add("inning-live");
+
     } else {
-      inningEl.innerText = new Date(game.gameDate).toLocaleTimeString();
+      inningEl.innerText = gameTime;
       inningEl.classList.add("inning-scheduled");
     }
 
-    // Matchup
+    // ✅ Matchup
     const matchupEl = document.getElementById("matchup");
-    if (status.includes("In Progress")) {
+    matchupEl.innerText = "";
+
+    if (status.includes("In Progress") &&
+        live.liveData?.plays?.currentPlay?.matchup) {
+
       const m = live.liveData.plays.currentPlay.matchup;
-      matchupEl.innerText = "P: " + m.pitcher.fullName +
-                            " vs B: " + m.batter.fullName;
+
+      matchupEl.innerText =
+        "P: " + m.pitcher.fullName +
+        " vs B: " + m.batter.fullName;
+
+    } else if (!linescore) {
+
+      const awayP = game.teams.away.probablePitcher;
+      const homeP = game.teams.home.probablePitcher;
+
+      if (awayP && homeP) {
+        matchupEl.innerText =
+          "Probable: " +
+          awayP.fullName + " vs " +
+          homeP.fullName;
+      }
+    }
+
+    // ✅ Lineups
+    const box = live.liveData?.boxscore;
+
+    if (box) {
+      function buildLineup(teamBox, label) {
+        const order = teamBox.battingOrder;
+
+        if (!order || order.length === 0) {
+          return "<strong>" + label + ":</strong><br>Not available";
+        }
+
+        const players = order.map(id =>
+          teamBox.players["ID" + id].person.fullName
+        );
+
+        return "<strong>" + label + ":</strong><br>" +
+          players.map((p, i) => (i + 1) + ". " + p).join("<br>");
+      }
+
+      document.getElementById("awayLineup").innerHTML =
+        buildLineup(box.teams.away, "Away");
+
+      document.getElementById("homeLineup").innerHTML =
+        buildLineup(box.teams.home, "Home");
     }
 
   } catch (e) {
@@ -233,7 +296,6 @@ async function loadScore() {
 
 loadScore();
 setInterval(loadScore, 20000);
-
 </script>
 
 </body>
