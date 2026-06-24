@@ -10,12 +10,11 @@ body {
 }
 
 #scorebug {
-  background: blue;
+  background: #004b8d;
   color: white;
   padding: 14px;
-  border-radius: 10px;
   font-family: Arial, sans-serif;
-  max-width: 800px;
+  width: 100%;
   margin: auto;
 }
 
@@ -30,10 +29,14 @@ body {
 /* GRID (logos + teams aligned) */
 #matchupGrid {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: minmax(70px, 1fr) auto minmax(70px, 1fr);
   align-items: center;
   justify-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  margin-top: 10px;
   row-gap: 6px;
+  max-width: 400px;
 }
 
 /* Logos */
@@ -178,7 +181,7 @@ body {
   <div id="matchupGrid">
 
     <img id="awayLogo" class="logo">
-    <div id="atSymbol">@</div>
+    <div id="atSymbol">VS</div>
     <img id="homeLogo" class="logo">
 
     <div id="awayTeam"></div>
@@ -208,7 +211,7 @@ async function loadScore() {
   try {
     // ✅ Get today's game
     const res = await fetch(
-      "https://statsapi.mlb.com/api/v1/schedule?sportId=11&teamId=552"
+      "https://statsapi.mlb.com/api/v1/schedule?sportId=11&teamId=552&date=2026-06-23"
     );
     const sched = await res.json();
 
@@ -265,36 +268,64 @@ async function loadScore() {
     });
 
     // ✅ SCORE
-    if (linescore) {
-      document.getElementById("score").innerText =
-        (linescore.teams.away.runs || 0) + " - " +
-        (linescore.teams.home.runs || 0);
-    } else {
-      document.getElementById("score").innerText = "vs";
-    }
+    const scoreEl = document.getElementById("score");
+
+// ✅ If NOT started yet → show date/time in score position
+if (!status.includes("In Progress") && status !== "Final") {
+  const gameDateObj = new Date(game.gameDate);
+  const now = new Date();
+
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const gameDay = new Date(
+    gameDateObj.getFullYear(),
+    gameDateObj.getMonth(),
+    gameDateObj.getDate()
+  );
+
+  const diff = (gameDay - today) / (1000 * 60 * 60 * 24);
+
+  let dateLabel = "";
+
+  if (diff === 0) {
+    dateLabel = "Today";
+  } else if (diff === 1) {
+    dateLabel = "Tomorrow";
+  } else {
+    dateLabel = gameDateObj.toLocaleDateString([], {
+      month: "short",
+      day: "numeric"
+    });
+  }
+
+  scoreEl.innerText = dateLabel + " - " + gameTime;
+
+} else {
+  // ✅ Game live or final → show actual score
+  scoreEl.innerText =
+    (linescore?.teams.away.runs || 0) + " - " +
+    (linescore?.teams.home.runs || 0);
+}
 
     // ✅ INNING / STATUS
     const inningEl = document.getElementById("inning");
-    inningEl.className = "";
+inningEl.className = "";
 
-    if (!linescore) {
-      inningEl.innerText = gameTime;
-      inningEl.classList.add("inning-scheduled");
+// ✅ Pregame → hide
+if (!status.includes("In Progress") && status !== "Final") {
+  inningEl.innerText = "";
 
-    } else if (status === "Final") {
-      inningEl.innerText = "Final";
-      inningEl.classList.add("inning-final");
+// ✅ Final
+} else if (status === "Final") {
+  inningEl.innerText = "FINAL";
+  inningEl.classList.add("inning-final");
 
-    } else if (status.includes("In Progress")) {
-      inningEl.innerText =
-        (linescore.inningState || "") + " " +
-        (linescore.currentInningOrdinal || "");
-      inningEl.classList.add("inning-live");
-
-    } else {
-      inningEl.innerText = gameTime;
-      inningEl.classList.add("inning-scheduled");
-    }
+// ✅ Live
+} else if (status.includes("In Progress")) {
+  inningEl.innerText =
+    (linescore.inningState || "") + " " +
+    (linescore.currentInningOrdinal || "");
+  inningEl.classList.add("inning-live");
+}
 
     // ✅ OUTS
     const outsEl = document.getElementById("outs");
@@ -403,7 +434,7 @@ async function loadScore() {
 
 // ✅ Run + refresh
 loadScore();
-setInterval(loadScore, 20000);
+setInterval(loadScore, 15000);
 
 </script>  
 </body>
