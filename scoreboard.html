@@ -6,14 +6,14 @@
 body {
   margin: 0;
   background: transparent;
-  font-family: Arial, sans-serif;
+  font-family: Arial;
 }
 
 #scorebug {
-  background: transparent;
+  background: #004b8d;
   color: white;
   padding: 14px;
-  font-family: Arial, sans-serif;
+  font-family: Arial;
   width: 100%;
   margin: auto;
 }
@@ -21,7 +21,7 @@ body {
 /* VENUE */
 #venue {
   text-align: center;
-  font-size: 12px;
+  font-size: clamp(8px, 3.5vw, 14px);
   color: #ccc;
   margin-bottom: 6px;
 }
@@ -41,27 +41,29 @@ body {
 
 /* Logos */
 .logo {
-  width: 44px;
-  height: 44px;
+  width: clamp(32px, 10vw, 44px);
+  height: clamp(32px, 10vw, 44px);
 }
 
 /* @ symbol */
 #atSymbol {
-  font-size: 16px;
+  font-size: clamp(10px, 3.5vw, 16px);
   font-weight: bold;
 }
 
 /* Teams */
 #awayTeam,
 #homeTeam {
-  font-size: 14px;
+  font-size: clamp(8px, 3.5vw, 14px);
   text-align: center;
+  margin: 5px;
+  color: #ccc;
 }
 
 /* SCORE */
 #score {
-  font-size: 40px;
-  margin: 10px 0;
+  font-size: clamp(30px, 10vw, 50px);
+  padding: 10px;
   text-align: center;
   font-weight: bold;
 }
@@ -69,9 +71,9 @@ body {
 /* INNING */
 #inning {
   text-align: center;
-  font-size: 14px;
+  font-size: clamp(12px, 3.5vw, 14px);
   margin: 6px auto;
-  padding: 4px 10px;
+  padding: 4px 15px;
   border-radius: 6px;
   width: fit-content;
   font-weight: bold;
@@ -79,7 +81,7 @@ body {
 
 /* STATUS COLORS */
 .inning-live {
-  background: none;
+  background: #f47d30;
 }
 
 .inning-final {
@@ -94,16 +96,15 @@ body {
 #outs {
   text-align: center;
   font-size: 12px;
-  margin-top: 4px;
-  color: #ccc;
+  margin-top: 8px;
+  color: white;
 }
 
 /* MATCHUP */
 #matchup {
   text-align: center;
-  margin: 8px 0;
-  font-size: 13px;
-  font-weight: bold;
+  margin: 10px;
+  font-size: clamp(8px, 3.5vw, 14px);
 }
 
 /* BASE DIAMOND */
@@ -112,6 +113,7 @@ body {
   width: 80px;
   height: 80px;
   margin: 12px auto;
+  margin-top: 20px;
 }
 
 .base {
@@ -131,16 +133,18 @@ body {
 }
 
 /* Base positions */
-#second {
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%) rotate(45deg);
-}
+
 
 #first {
   right: 0;
   top: 50%;
   transform: translateY(-50%) rotate(45deg);
+}
+
+#second {
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%) rotate(45deg);
 }
 
 #third {
@@ -154,11 +158,16 @@ body {
   display: flex;
   gap: 12px;
   margin-top: 10px;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0 6px;
 }
 
 .lineup {
   width: 50%;
-  font-size: 12px;
+  font-size: clamp(10px, 2.8vw, 13px);
+  line-height: 1.4;
 }
 
 #awayLineup {
@@ -205,13 +214,20 @@ body {
   <div id="diamond">
     <div class="base" id="first"></div>
     <div class="base" id="second"></div>
+    <div class="base" id="third"></div>
+  </div>
+    <!-- Lineups -->
+ <div id="lineups">   
+    <div id="awayLineup" class="lineup"></div>
+    <div id="homeLineup" class="lineup"></div>
+  </div>
 
 <script>
 async function loadScore() {
   try {
     // ✅ Get today's game
     const res = await fetch(
-      "https://statsapi.mlb.com/api/v1/schedule?sportId=11&teamId=552&date=2026-06-23"
+      "https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=140"
     );
     const sched = await res.json();
 
@@ -238,20 +254,6 @@ async function loadScore() {
     document.getElementById("venue").innerText =
       game.venue.name;
 
-    // ✅ Records (if elements exist)
-    const awayRecordEl = document.getElementById("awayRecord");
-    const homeRecordEl = document.getElementById("homeRecord");
-
-    if (awayRecordEl && homeRecordEl) {
-      awayRecordEl.innerText =
-        game.teams.away.leagueRecord.wins + "-" +
-        game.teams.away.leagueRecord.losses;
-
-      homeRecordEl.innerText =
-        game.teams.home.leagueRecord.wins + "-" +
-        game.teams.home.leagueRecord.losses;
-    }
-
     // ✅ Get live data
     const liveRes = await fetch(
       `https://statsapi.mlb.com/api/v1.1/game/${game.gamePk}/feed/live`
@@ -261,86 +263,64 @@ async function loadScore() {
     const status = game.status.detailedState;
     const linescore = live.liveData?.linescore;
 
-    // ✅ Format time (no seconds)
+    // ✅ Format time
     const gameTime = new Date(game.gameDate).toLocaleTimeString([], {
       hour: "numeric",
       minute: "2-digit"
     });
 
-    // ✅ SCORE
+    // ✅ SCORE (only show during game or after)
     const scoreEl = document.getElementById("score");
 
-// ✅ If NOT started yet → show date/time in score position
-if (!status.includes("In Progress") && status !== "Final") {
-  const gameDateObj = new Date(game.gameDate);
-  const now = new Date();
+    if (status.includes("In Progress") || status === "Final") {
+      scoreEl.style.display = "block";
 
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const gameDay = new Date(
-    gameDateObj.getFullYear(),
-    gameDateObj.getMonth(),
-    gameDateObj.getDate()
-  );
+      scoreEl.innerText =
+        (linescore?.teams.away.runs || 0) + " - " +
+        (linescore?.teams.home.runs || 0);
 
-  const diff = (gameDay - today) / (1000 * 60 * 60 * 24);
+    } else {
+      scoreEl.style.display = "none"; // ✅ hide pregame
+    }
 
-  let dateLabel = "";
-
-  if (diff === 0) {
-    dateLabel = "Today";
-  } else if (diff === 1) {
-    dateLabel = "Tomorrow";
-  } else {
-    dateLabel = gameDateObj.toLocaleDateString([], {
-      month: "short",
-      day: "numeric"
-    });
-  }
-
-  scoreEl.innerText = dateLabel + " - " + gameTime;
-
-} else {
-  // ✅ Game live or final → show actual score
-  scoreEl.innerText =
-    (linescore?.teams.away.runs || 0) + " - " +
-    (linescore?.teams.home.runs || 0);
-}
-
-    // ✅ INNING / STATUS
+    // ✅ INNING / STATUS (always visible)
     const inningEl = document.getElementById("inning");
-inningEl.className = "";
+    inningEl.className = "";
 
-// ✅ Pregame → hide
-if (!status.includes("In Progress") && status !== "Final") {
-  inningEl.innerText = "";
+    // Pregame
+    if (!status.includes("In Progress") && status !== "Final") {
+      inningEl.innerText = gameTime;
+      inningEl.classList.add("inning-scheduled");
 
-// ✅ Final
-} else if (status === "Final") {
-  inningEl.innerText = "FINAL";
-  inningEl.classList.add("inning-final");
+    // Final
+    } else if (status === "Final") {
+      inningEl.innerText = "FINAL";
+      inningEl.classList.add("inning-final");
 
-// ✅ Live
-} else if (status.includes("In Progress")) {
-  inningEl.innerText =
-    (linescore.inningState || "") + " " +
-    (linescore.currentInningOrdinal || "");
-  inningEl.classList.add("inning-live");
-}
+    // Live
+    } else if (status.includes("In Progress")) {
+      inningEl.innerText =
+        (linescore.inningState || "") + " " +
+        (linescore.currentInningOrdinal || "");
+      inningEl.classList.add("inning-live");
+    }
 
     // ✅ OUTS
     const outsEl = document.getElementById("outs");
     if (outsEl) {
       outsEl.innerText = "";
-      if (linescore && status.includes("In Progress")) {
+
+      if (status.includes("In Progress") && linescore) {
         const outs = linescore.outs;
         outsEl.innerText = outs + " Out" + (outs !== 1 ? "s" : "");
       }
     }
 
-    // ✅ MATCHUP
+    // ✅ MATCHUP (probables / P vs B / W-L)
     const matchupEl = document.getElementById("matchup");
     matchupEl.innerText = "";
 
+    // Live
     if (
       status.includes("In Progress") &&
       live.liveData?.plays?.currentPlay?.matchup
@@ -351,7 +331,8 @@ if (!status.includes("In Progress") && status !== "Final") {
         "P: " + m.pitcher.fullName +
         " vs B: " + m.batter.fullName;
 
-    } else if (!linescore) {
+    // Pregame
+    } else if (!status.includes("In Progress") && status !== "Final") {
       const awayP = game.teams.away.probablePitcher;
       const homeP = game.teams.home.probablePitcher;
 
@@ -362,6 +343,7 @@ if (!status.includes("In Progress") && status !== "Final") {
           homeP.fullName;
       }
 
+    // Final
     } else if (status === "Final" && live.liveData?.decisions) {
       const win = live.liveData.decisions.winner;
       const loss = live.liveData.decisions.loser;
@@ -408,8 +390,9 @@ if (!status.includes("In Progress") && status !== "Final") {
       function buildLineup(teamBox, label) {
         const order = teamBox.battingOrder;
 
+        // ✅ If lineup not posted yet
         if (!order || order.length === 0) {
-          return "<strong>" + label + ":</strong><br>Not available";
+          return "<strong>" + label + ":</strong><br>Lineup not available";
         }
 
         const players = order.map(id =>
