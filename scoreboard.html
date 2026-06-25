@@ -11,7 +11,7 @@ body {
 }
 
 #scorebug {
-  background: #004b8d;
+  background: transparent;
   color: white;
   font-family: Arial;
   width: 100%;
@@ -258,7 +258,7 @@ async function loadScore() {
   try {
     // ✅ Get today's game
     const res = await fetch(
-      "https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=139"
+      "https://statsapi.mlb.com/api/v1/schedule?sportId=11&teamId=552"
     );
     const sched = await res.json();
 
