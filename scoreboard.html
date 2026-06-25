@@ -11,7 +11,7 @@ body {
 }
 
 #scorebug {
-  background: transparent;
+  background: #004b8d;
   color: white;
   font-family: Arial;
   width: 100%;
@@ -23,9 +23,9 @@ body {
 /* VENUE */
 #venue {
   text-align: center;
-  font-size: clamp(12px, 4vw, 20px);
-  color: #ccc;
-  margin-bottom: 14px;
+  font-size: clamp(8px, 3.5vw, 15px);
+  color: white;
+  margin-bottom: 6px;
 }
 
 /* GRID (logos + teams aligned) */
@@ -43,29 +43,29 @@ body {
 
 /* Logos */
 .logo {
-  width: clamp(60px, 20vw, 100px);
-  height: clamp(60px, 20vw, 100px);
+  width: clamp(32px, 10vw, 60px);
+  height: clamp(32px, 10vw, 60px);
 }
 
 /* @ symbol */
 #atSymbol {
-  font-size: clamp(15px, 5vw, 25px);
+  font-size: clamp(10px, 3.5vw, 16px);
   font-weight: bold;
 }
 
 /* Teams */
 #awayTeam,
 #homeTeam {
-  font-size: clamp(12x, 4vw, 20px);
+  font-size: clamp(8px, 3.5vw, 15px);
   text-align: center;
   margin: 5px;
-  color: #ccc;
+  color: white;
 }
 
 /* SCORE */
 #score {
-  font-size: clamp(60px, 20vw, 100px);
-  padding: 10px;
+  font-size: clamp(50px, 10vw, 75px);
+  margin: 5px;
   text-align: center;
   font-weight: bold;
 }
@@ -73,8 +73,8 @@ body {
 /* INNING */
 #inning {
   text-align: center;
-  font-size: clamp(24px, 8vw, 40px);
-  margin: 6px auto;
+  /*font-size: clamp(12px, 3.5vw, 20px);*/
+  margin: 5px auto;
   padding: 4px 15px;
   border-radius: 6px;
   width: fit-content;
@@ -84,29 +84,54 @@ body {
 /* STATUS COLORS */
 .inning-live {
   background: #f47d30;
+  font-size: clamp(9px, 3vw, 15px)
 }
 
 .inning-final {
   background: #787878;
+  font-size: clamp(10.5px,3.5vw,17.5px)
 }
 
 .inning-scheduled {
   background: none;
+  font-size: clamp(10.5px,3.5vw,17.5px)
 }
 
 /* OUTS */
 #outs {
-  text-align: center;
-  font-size: clamp(18px, 6vw, 30px);
-  margin-top: 8px;
-  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.outs-label {
+  font-size: clamp(8px, 3.5vw, 15px);
+  margin-right: 6px;
+  display: flex;
+  align-items: center;
+}
+
+.out{
+  width: 10px;
+  height: 10px;
+  background: #ccc;
+  border-radius: 50%;
+  opacity: 0.6;
+  transition: 0.2s;
+}
+
+.out.active {
+  background: #f47d30;
+  opacity: 1;
 }
 
 /* MATCHUP */
 #matchup {
   text-align: center;
-  margin: 10px;
-  font-size: clamp(10px, 5vw, 20px);
+  margin: 0 0 10px;
+  font-size: clamp(8px, 3.5vw, 15px);
 }
 
 /* BASE DIAMOND */
@@ -114,8 +139,7 @@ body {
   position: relative;
   width: 80px;
   height: 80px;
-  margin: 12px auto;
-  margin-top: 20px;
+  margin: 20px auto 0;
 }
 
 .base {
@@ -145,7 +169,7 @@ body {
 
 #second {
   left: 50%;
-  top: 0;
+  top: 0%;
   transform: translateX(-50%) rotate(45deg);
 }
 
@@ -168,7 +192,7 @@ body {
 
 .lineup {
   width: 50%;
-  font-size: clamp(10.5px, 3.5vw, 17.5px);
+  font-size: clamp(10px, 2.8vw, 14px);
   line-height: 1.4;
 }
 
@@ -206,11 +230,12 @@ body {
 
   <!-- Inning / Status -->
   <div id="inning"></div>
-  <div id="outs"></div>
+  <div id="outs">
+    <span class="outs-label">Outs:</span>
+    <span class="out"></span>
+    <span class="out"></span>
+  </div>
 
-
-  <!-- Matchup -->
-  <div id="matchup"></div>
 
   <!-- Diamond -->
   <div id="diamond">
@@ -218,6 +243,10 @@ body {
     <div class="base" id="second"></div>
     <div class="base" id="third"></div>
   </div>
+
+  <!-- Matchup -->
+  <div id="matchup"></div>
+  
     <!-- Lineups -->
  <div id="lineups">   
     <div id="awayLineup" class="lineup"></div>
@@ -229,12 +258,19 @@ async function loadScore() {
   try {
     // ✅ Get today's game
     const res = await fetch(
-      "https://statsapi.mlb.com/api/v1/schedule?sportId=11&teamId=552"
+      "https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=139"
     );
     const sched = await res.json();
 
     const game = sched.dates[0]?.games[0];
     if (!game) return;
+
+    const status = game.status.detailedState;
+
+    const isLive = status.includes("In Progress");
+    const isFinal =
+      status.includes("Final") ||
+      status.includes("Game Over");
 
     // ✅ Team names
     document.getElementById("awayTeam").innerText =
@@ -262,7 +298,6 @@ async function loadScore() {
     );
     const live = await liveRes.json();
 
-    const status = game.status.detailedState;
     const linescore = live.liveData?.linescore;
 
     // ✅ Format time
@@ -271,96 +306,101 @@ async function loadScore() {
       minute: "2-digit"
     });
 
-    // ✅ SCORE (only show during game or after)
+    // ✅ SCORE
     const scoreEl = document.getElementById("score");
 
-    if (status.includes("In Progress") || status.includes("Final") || status.includes("Game Over")) {
+    if (isLive || isFinal) {
       scoreEl.style.display = "block";
 
       scoreEl.innerText =
         (linescore?.teams.away.runs || 0) + " - " +
         (linescore?.teams.home.runs || 0);
-
     } else {
-      scoreEl.style.display = "none"; // ✅ hide pregame
+      scoreEl.style.display = "none";
     }
 
-    // ✅ INNING / STATUS (always visible)
+    // ✅ INNING / STATUS
     const inningEl = document.getElementById("inning");
     inningEl.className = "";
 
-    // Pregame
-    if (!status.includes("In Progress") && status !== "Final") {
-  const gameDateObj = new Date(game.gameDate);
-  const now = new Date();
+    if (!isLive && !isFinal) {
+      const gameDateObj = new Date(game.gameDate);
+      const now = new Date();
 
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const gameDay = new Date(
-    gameDateObj.getFullYear(),
-    gameDateObj.getMonth(),
-    gameDateObj.getDate()
-  );
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const gameDay = new Date(
+        gameDateObj.getFullYear(),
+        gameDateObj.getMonth(),
+        gameDateObj.getDate()
+      );
 
-  const diff = (gameDay - today) / (1000 * 60 * 60 * 24);
+      const diff = (gameDay - today) / (1000 * 60 * 60 * 24);
 
-  let dateLabel = "";
+      let dateLabel = "";
 
-  if (diff === 0) {
-    dateLabel = "Today";
-  } else if (diff === 1) {
-    dateLabel = "Tomorrow";
-  } else {
-    dateLabel = gameDateObj.toLocaleDateString([], {
-      month: "short",
-      day: "numeric"
-    });
-  }
+      if (diff === 0) dateLabel = "Today";
+      else if (diff === 1) dateLabel = "Tomorrow";
+      else {
+        dateLabel = gameDateObj.toLocaleDateString([], {
+          month: "short",
+          day: "numeric"
+        });
+      }
 
-  inningEl.innerText = dateLabel + " - " + gameTime;
-  inningEl.classList.add("inning-scheduled");
-}
+      inningEl.innerText = dateLabel + " - " + gameTime;
+      inningEl.classList.add("inning-scheduled");
 
-    // Final
-      else if (status === "Final") {
+    } else if (isFinal) {
       inningEl.innerText = "FINAL";
       inningEl.classList.add("inning-final");
 
-    // Live
-    } else if (status.includes("In Progress")) {
+    } else if (isLive) {
       inningEl.innerText =
-        (linescore.inningState || "") + " " +
-        (linescore.currentInningOrdinal || "");
+        (linescore?.inningState || "") + " " +
+        (linescore?.currentInningOrdinal || "");
       inningEl.classList.add("inning-live");
     }
 
-    // ✅ OUTS
-    const outsEl = document.getElementById("outs");
-    if (outsEl) {
-      outsEl.innerText = "";
+    // ✅ OUTS (ONLY SHOW WHEN LIVE)
+    const outsContainer = document.getElementById("outs");
 
-      if (status.includes("In Progress") && linescore) {
+    if (outsContainer) {
+      // 🔴 Hide by default
+      outsContainer.style.display = "none";
+
+      if (isLive && linescore) {
+        // ✅ Show when live
+        outsContainer.style.display = "flex";
+
+        const dots = outsContainer.querySelectorAll(".out");
+
+        // Reset dots
+        dots.forEach(dot => dot.classList.remove("active"));
+
         const outs = linescore.outs;
-        outsEl.innerText = outs + " Out" + (outs !== 1 ? "s" : "");
+
+        if (outs === 1) {
+          dots[0].classList.add("active");
+        } else if (outs === 2) {
+          dots[0].classList.add("active");
+          dots[1].classList.add("active");
+        }
+        // 0 or 3 outs = none active ✅
       }
     }
 
-    // ✅ MATCHUP (probables / P vs B / W-L)
+    // ✅ MATCHUP
     const matchupEl = document.getElementById("matchup");
     matchupEl.innerText = "";
 
-    // Live
-    if (
-      status.includes("In Progress") &&
-      live.liveData?.plays?.currentPlay?.matchup
-    ) {
+    if (isLive && live.liveData?.plays?.currentPlay?.matchup) {
       const m = live.liveData.plays.currentPlay.matchup;
 
       matchupEl.innerText =
         "P: " + m.pitcher.fullName +
         " vs B: " + m.batter.fullName;
 
-    // Pregame
-    } else if (!status.includes("In Progress") && status !== "Final") {
+    } else if (!isLive && !isFinal) {
       const awayP = game.teams.away.probablePitcher;
       const homeP = game.teams.home.probablePitcher;
 
@@ -371,8 +411,7 @@ async function loadScore() {
           homeP.fullName;
       }
 
-    // Final
-    } else if (status === "Final" && live.liveData?.decisions) {
+    } else if (isFinal && live.liveData?.decisions) {
       const win = live.liveData.decisions.winner;
       const loss = live.liveData.decisions.loser;
 
@@ -393,10 +432,7 @@ async function loadScore() {
         if (el) el.classList.remove("active");
       });
 
-      if (
-        status.includes("In Progress") &&
-        linescore?.offense
-      ) {
+      if (isLive && linescore?.offense) {
         diamond.style.display = "block";
 
         if (linescore.offense.first) {
@@ -411,62 +447,56 @@ async function loadScore() {
       }
     }
 
-    // ✅ LINEUPS
+    // ✅ LINEUPS + SP
     const box = live.liveData?.boxscore;
 
     if (box) {
       function buildLineup(teamBox, label, probablePitcher) {
-  const order = teamBox.battingOrder;
+        const order = teamBox.battingOrder;
 
-  // ✅ Get SP (fallback if probable missing)
-  let pitcherName = "";
+        let pitcherName = "";
 
-  if (probablePitcher && probablePitcher.fullName) {
-    pitcherName = probablePitcher.fullName;
-  } else if (teamBox.pitchers && teamBox.pitchers.length > 0) {
-    const starterId = teamBox.pitchers[0]; // first pitcher = starter
-    const starter = teamBox.players["ID" + starterId];
-    if (starter) {
-      pitcherName = starter.person.fullName;
-    }
-  }
+        if (probablePitcher && probablePitcher.fullName) {
+          pitcherName = probablePitcher.fullName;
+        } else if (teamBox.pitchers && teamBox.pitchers.length > 0) {
+          const starterId = teamBox.pitchers[0];
+          const starter = teamBox.players["ID" + starterId];
+          if (starter) pitcherName = starter.person.fullName;
+        }
 
-  // ✅ If no lineup yet
-  if (!order || order.length === 0) {
-    return "<strong>" + label + ":</strong><br>Lineup not available" +
-      (pitcherName ? "<br><br>SP: " + pitcherName : "");
-  }
+        if (!order || order.length === 0) {
+          return "<strong>" + label + ":</strong><br>Lineup not available" +
+            (pitcherName ? "<br><br>SP: " + pitcherName : "");
+        }
 
-  const players = order.map(id =>
-    teamBox.players["ID" + id].person.fullName
-  );
+        const players = order.map(id =>
+          teamBox.players["ID" + id].person.fullName
+        );
 
-  let html =
-    "<strong>" + label + ":</strong><br>" +
-    players.map((p, i) => (i + 1) + ". " + p).join("<br>");
+        let html =
+          "<strong>" + label + ":</strong><br>" +
+          players.map((p, i) => (i + 1) + ". " + p).join("<br>");
 
-  // ✅ ALWAYS add SP if we found one
-  if (pitcherName) {
-    html += "<br><br><span class='sp'>SP: " + pitcherName + "</span>";
-  }
+        if (pitcherName) {
+          html += "<br><br><span class='sp'>SP: " + pitcherName + "</span>";
+        }
 
-  return html;
-}
-
+        return html;
+      }
 
       document.getElementById("awayLineup").innerHTML =
-  buildLineup(
-    box.teams.away,
-    "Away",
-    game.teams.away.probablePitcher
-  );
+        buildLineup(
+          box.teams.away,
+          "Away",
+          game.teams.away.probablePitcher
+        );
 
-document.getElementById("homeLineup").innerHTML =
-  buildLineup(
-    box.teams.home,
-    "Home",
-    game.teams.home.probablePitcher
-  );
+      document.getElementById("homeLineup").innerHTML =
+        buildLineup(
+          box.teams.home,
+          "Home",
+          game.teams.home.probablePitcher
+        );
     }
 
   } catch (e) {
@@ -476,7 +506,8 @@ document.getElementById("homeLineup").innerHTML =
 
 // ✅ Run + refresh
 loadScore();
-setInterval(loadScore, 15000);
+setInterval(loadScore, 10000);
+
 
 </script>  
 </body>
