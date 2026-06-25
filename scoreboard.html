@@ -10,8 +10,12 @@ body {
   width: 100%;
 }
 
+:root{
+  --column-width: clamp(120px, 30vw, 1000px);
+}
+
 #scorebug {
-  background: transparent;
+  background: #004b8d;
   color: white;
   font-family: Arial;
   width: 100%;
@@ -23,7 +27,7 @@ body {
 /* VENUE */
 #venue {
   text-align: center;
-  font-size: clamp(12px, 3vw, 18px);
+  font-size: clamp(12px, 3vw,60px);
   color: white;
   margin-bottom: 10px;
 }
@@ -31,32 +35,32 @@ body {
 /* GRID (logos + teams aligned) */
 #matchupGrid {
   display: grid;
-  grid-template-columns: minmax(70px, 1fr) auto minmax(70px, 1fr);
+  grid-template-columns: var(--column-width) auto var(--column-width);
   align-items: center;
   justify-items: center;
   justify-content: center;
   margin: 0 auto;
-  margin-top: 10px;
+  margin-top: 15px;
   row-gap: 6px;
-  max-width: 320px;
+  max-width: 2000px;
 }
 
 /* Logos */
 .logo {
-  width: clamp(80px, 20vw, 120px);
-  height: clamp(80px, 20vw, 120px);
+  width: clamp(80px, 20vw, 400px);
+  height: clamp(80px, 20vw, 400px);
 }
 
 /* @ symbol */
 #atSymbol {
-  font-size: clamp(16px, 4vw, 24px);
+  font-size: clamp(16px, 4vw, 80px);
   font-weight: bold;
 }
 
 /* Teams */
 #awayTeam,
 #homeTeam {
-  font-size: clamp(10px, 2.5vw, 15px);
+  font-size: clamp(10px, 2.5vw, 50px);
   text-align: center;
   margin: 5px auto 5px;
   color: white;
@@ -64,7 +68,7 @@ body {
 
 /* SCORE */
 #score {
-  font-size: clamp(50px, 10vw, 75px);
+  font-size: clamp(50px, 10vw, 200px);
   margin: 5px;
   text-align: center;
   font-weight: bold;
@@ -84,17 +88,17 @@ body {
 /* STATUS COLORS */
 .inning-live {
   background: #f47d30;
-  font-size: clamp(12px, 3vw, 18px)
+  font-size: clamp(20px, 5vw, 100px)
 }
 
 .inning-final {
   background: #787878;
-  font-size: clamp(14px,3.5vw,21px)
+  font-size: clamp(20px,5vw,100px)
 }
 
 .inning-scheduled {
   background: none;
-  font-size: clamp(16px,4vw,24px)
+  font-size: clamp(24px,6vw,120px)
 }
 
 /* OUTS */
@@ -131,7 +135,7 @@ body {
 #matchup {
   text-align: center;
   margin: 20px 0;
-  font-size: clamp(12px, 3vw, 18px);
+  font-size: clamp(12px, 3vw, 60px);
 }
 
 /* BASE DIAMOND */
@@ -182,17 +186,18 @@ body {
 /* LINEUPS */
 #lineups {
   display: flex;
+  justify-content: center;
   gap: 12px;
   margin-top: 10px;
-  max-width: 320px;
+  max-width: 2000px;
   margin-left: auto;
   margin-right: auto;
   padding: 0 6px;
 }
 
 .lineup {
-  width: 50%;
-  font-size: clamp(10px, 2.5vw, 15px);
+  width: var(--column-width);
+  font-size: clamp(10px, 2.5vw, 50px);
   line-height: 1.4;
 }
 
