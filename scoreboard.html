@@ -27,9 +27,9 @@ body {
 /* VENUE */
 #venue {
   text-align: center;
-  font-size: clamp(14px, 3.5vw,70px);
-  color: white;
-  margin-bottom: 10px;
+  font-size: clamp(16px, 4vw,80px);
+  color: #CCC;
+  margin-bottom: 15px;
 }
 
 /* GRID (logos + teams aligned) */
@@ -60,15 +60,15 @@ body {
 /* Teams */
 #awayTeam,
 #homeTeam {
-  font-size: clamp(14px, 3.5vw, 70px);
+  font-size: clamp(16px, 4vw, 80px);
   text-align: center;
-  margin: 5px auto 5px;
+  margin: 5px auto 0;
   color: white;
 }
 
 /* SCORE */
 #score {
-  font-size: clamp(40px, 10vw, 200px);
+  font-size: clamp(80px, 20vw, 400px);
   margin: 5px;
   text-align: center;
   font-weight: bold;
@@ -111,7 +111,7 @@ body {
 }
 
 .outs-label {
-  font-size: clamp(12px, 3vw, 60px);
+  font-size: clamp(16px, 4vw, 80px);
   margin-right: 6px;
   display: flex;
   align-items: center;
@@ -135,7 +135,7 @@ body {
 #matchup {
   text-align: center;
   margin: 20px 0;
-  font-size: clamp(12px, 3vw, 60px);
+  font-size: clamp(16px, 4vw, 80px);
 }
 
 /* BASE DIAMOND */
@@ -197,7 +197,7 @@ body {
 
 .lineup {
   width: var(--column-width);
-  font-size: clamp(14px, 3.5vw, 70px);
+  font-size: clamp(16px, 4vw, 80px);
   line-height: 1.4;
 }
 
@@ -207,6 +207,13 @@ body {
 
 #homeLineup {
   text-align: right;
+}
+
+.record {
+  font-size: clamp(12px, 3vw, 60px);
+  color: #CCC;
+  margin-top: -4px;
+  text-align: center;
 }
 </style>  
 </head>
@@ -227,6 +234,10 @@ body {
     <div id="awayTeam"></div>
     <div></div>
     <div id="homeTeam"></div>
+    
+    <div id="awayRecord" class="record"></div>
+    <div></div>
+    <div id="homeRecord" class="record"></div>
 
   </div>
 
@@ -283,6 +294,16 @@ async function loadScore() {
 
     document.getElementById("homeTeam").innerText =
       game.teams.home.team.name;
+    
+    // Records
+    const awayRec = game.teams.away.leagueRecord;
+    const homeRec = game.teams.home.leagueRecord;
+    
+    document.getElementById("awayRecord").innerText = 
+      awayRec.wins + "-" + awayRec.losses;
+    
+    document.getElementById("homeRecord").innerText = 
+      homeRec.wins + "-" + homeRec.losses;
 
     // ✅ Logos
     document.getElementById("awayLogo").src =
@@ -294,8 +315,23 @@ async function loadScore() {
       game.teams.home.team.id + ".svg";
 
     // ✅ Venue
-    document.getElementById("venue").innerText =
-      game.venue.name;
+    //document.getElementById("venue").innerText =
+      //game.venue.name;
+    
+    const venueEl = document.getElementById("venue");
+    const gameDateObj = new Date(game.gameDate);
+    //Formatted time
+    const gameTime = gameDateObj.toLocaleTimeString([],{hour: "numeric", minute: "2-digit"});
+    //Formatted date
+    const gameDateShort = gameDateObj.toLocaleDateString([],{month: "short", day:"numeric"});
+    //Default
+    let venueText = game.venue.name;
+    //Live
+    if (isLive) {venueText = gameTime + " - " + game.venue.name;}
+    //Final
+    if (isFinal) {venueText =gameDateShort + ", " + gameTime + " - " + game.venue.name;}
+    //Apply
+    venueEl.innerText = venueText;
 
     // ✅ Get live data
     const liveRes = await fetch(
@@ -304,12 +340,6 @@ async function loadScore() {
     const live = await liveRes.json();
 
     const linescore = live.liveData?.linescore;
-
-    // ✅ Format time
-    const gameTime = new Date(game.gameDate).toLocaleTimeString([], {
-      hour: "numeric",
-      minute: "2-digit"
-    });
 
     // ✅ SCORE
     const scoreEl = document.getElementById("score");
@@ -512,6 +542,7 @@ async function loadScore() {
 // ✅ Run + refresh
 loadScore();
 setInterval(loadScore, 10000);
+
 
 
 </script>  
