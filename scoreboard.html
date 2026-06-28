@@ -64,6 +64,7 @@ body {
   text-align: center;
   margin: 5px auto 0;
   color: white;
+  max-width: var(--column-width);
 }
 
 /* SCORE */
@@ -118,12 +119,13 @@ body {
 }
 
 .out{
-  width: 10px;
-  height: 10px;
+  width: clamp(12px,3vw,60px);
+  height: clamp(12px,3vw,60px);
   background: #ccc;
   border-radius: 50%;
   opacity: 0.6;
   transition: 0.2s;
+  margin: clamp(8px, 2vw, 40px) clamp(4px,1vw,5px);
 }
 
 .out.active {
@@ -141,14 +143,14 @@ body {
 /* BASE DIAMOND */
 #diamond {
   position: relative;
-  width: 80px;
-  height: 80px;
+  width: clamp(60px, 15vw, 300px);
+  height: clamp(60px, 15vw, 300px);
   margin: 20px auto 0;
 }
 
 .base {
-  width: 16px;
-  height: 16px;
+  width: clamp(20px, 5vw, 100px);
+  height: clamp(20px, 5vw, 100px);
   background: #ccc;
   position: absolute;
   transform: rotate(45deg);
