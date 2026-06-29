@@ -275,12 +275,41 @@ body {
 async function loadScore() {
   try {
     // ✅ Get today's game
-    const res = await fetch(
-      "https://statsapi.mlb.com/api/v1/schedule?sportId=11&teamId=552"
-    );
+    const today = new Date();
+
+// look ahead ~7 days
+const future = new Date();
+future.setDate(today.getDate() + 30);
+
+const formatDate = d => d.toISOString().split("T")[0];
+
+const res = await fetch(
+  `https://statsapi.mlb.com/api/v1/schedule?sportId=11&teamId=552&startDate=${formatDate(today)}&endDate=${formatDate(future)}`
+);
     const sched = await res.json();
 
-    const game = sched.dates[0]?.games[0];
+    let game = null;
+
+for (const date of sched.dates || []) {
+  const g = date.games;
+
+  if (g && g.length > 0) {
+    // prefer live game
+    const liveGame = g.find(gm =>
+      gm.status.detailedState.includes("In Progress")
+    );
+
+    game = liveGame || g[0];
+    break;
+  }
+}
+
+
+if (!game) {
+  console.log("No upcoming games found");
+  return;
+}
+
     if (!game) return;
 
     const status = game.status.detailedState;
@@ -334,6 +363,8 @@ async function loadScore() {
     if (isFinal) {venueText =gameDateShort + ", " + gameTime + " - " + game.venue.name;}
     //Apply
     venueEl.innerText = venueText;
+    
+    
 
     // ✅ Get live data
     const liveRes = await fetch(
@@ -397,6 +428,10 @@ async function loadScore() {
         (linescore?.currentInningOrdinal || "");
       inningEl.classList.add("inning-live");
     }
+    
+    //document.getElementById("inning").innerText +=
+  //"\n" + status;
+
 
     // ✅ OUTS (ONLY SHOW WHEN LIVE)
     const outsContainer = document.getElementById("outs");
@@ -540,6 +575,8 @@ async function loadScore() {
     console.log("ERROR:", e);
   }
 }
+
+
 
 // ✅ Run + refresh
 loadScore();
