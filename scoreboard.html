@@ -5,9 +5,9 @@
   /* GLOBAL */
 body {
   margin: 0;
-  background: transparent;
+  background: #004b8d;
   font-family: Arial;
-  width: 100%;
+  width: auto;
 }
 
 :root{
@@ -21,15 +21,16 @@ body {
   width: 100%;
   margin: auto;
   box-sizing: border-box;
-  padding: 14px;
+  padding: clamp(20px, 5vw, 100px) 0;
 }
 
 /* VENUE */
 #venue {
   text-align: center;
+  align-content: center;
   font-size: clamp(16px, 4vw,80px);
   color: #CCC;
-  margin-bottom: 15px;
+  margin-bottom: clamp(20px,5vw,100px);
 }
 
 /* GRID (logos + teams aligned) */
@@ -39,16 +40,15 @@ body {
   align-items: center;
   justify-items: center;
   justify-content: center;
-  margin: 0 auto;
-  margin-top: 15px;
+  margin: clamp(20px,5vw,100px) auto;
   row-gap: 6px;
   max-width: 2000px;
 }
 
 /* Logos */
 .logo {
-  width: clamp(100px, 25vw, 500px);
-  height: clamp(100px, 25vw, 500px);
+  width: clamp(80px, 20vw, 400px);
+  height: clamp(80px, 20vw, 400px);
 }
 
 /* @ symbol */
@@ -62,7 +62,7 @@ body {
 #homeTeam {
   font-size: clamp(16px, 4vw, 80px);
   text-align: center;
-  margin: 5px auto 0;
+  margin: clamp(12px,3vw,60px) auto 0;
   color: white;
   max-width: var(--column-width);
 }
@@ -70,7 +70,7 @@ body {
 /* SCORE */
 #score {
   font-size: clamp(80px, 20vw, 400px);
-  margin: 5px;
+  margin: clamp(20px,5vw,100px) auto;
   text-align: center;
   font-weight: bold;
 }
@@ -78,7 +78,6 @@ body {
 /* INNING */
 #inning {
   text-align: center;
-  /*font-size: clamp(12px, 3.5vw, 20px);*/
   margin: 10px auto;
   padding: 4px 15px;
   border-radius: 6px;
@@ -214,13 +213,12 @@ body {
 .record {
   font-size: clamp(12px, 3vw, 60px);
   color: #CCC;
-  margin-top: -4px;
+  /* margin: clamp(12px,3vw,60px) auto; */
   text-align: center;
 }
 </style>  
 </head>
 
-<body>
 <div id="scorebug">
 
   <!-- Venue -->
@@ -236,7 +234,6 @@ body {
     <div id="awayTeam"></div>
     <div></div>
     <div id="homeTeam"></div>
-    
     <div id="awayRecord" class="record"></div>
     <div></div>
     <div id="homeRecord" class="record"></div>
