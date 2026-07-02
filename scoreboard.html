@@ -101,6 +101,11 @@ body {
   font-size: clamp(24px,6vw,120px)
 }
 
+.inning-delayed {
+  background: red;
+  font-size: clamp(20px, 5vw, 100px);
+}
+
 /* OUTS */
 #outs {
   display: flex;
@@ -315,6 +320,14 @@ if (!game) {
     const isFinal =
       status.includes("Final") ||
       status.includes("Game Over");
+    
+    const isDelayed =
+          status.includes("Delayed") ||
+          status.includes("Suspended");
+    
+    const isPostponed = 
+          status.includes("Postponed") ||
+          status.includes("Cancelled");
 
     // ✅ Team names
     document.getElementById("awayTeam").innerText =
@@ -388,7 +401,17 @@ if (!game) {
     const inningEl = document.getElementById("inning");
     inningEl.className = "";
 
-    if (!isLive && !isFinal) {
+    if (isDelayed) {
+      inningEl.innterText = status.toUpperCase();
+      inningEl.classList.add("inning-delayed");
+    }
+    
+    else if (isPostponed) {
+      inningEl.innerText = status.toUpperCase();
+      inningEl.classList.add("inning-final");
+    }
+    
+    else if (!isLive && !isFinal && !isDelayed && !isPostponed) {
       const gameDateObj = new Date(game.gameDate);
       const now = new Date();
 
