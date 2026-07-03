@@ -5,7 +5,7 @@
   /* GLOBAL */
 body {
   margin: 0;
-  background: transparent;
+  background: #004b8d;
   font-family: Arial;
   width: auto;
 }
@@ -221,6 +221,65 @@ body {
   /* margin: clamp(12px,3vw,60px) auto; */
   text-align: center;
 }
+
+#gameHistory {
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  gap: 12px;
+
+  margin: 40px 0;
+  padding: 10px;
+
+  justify-content: flex-start;
+
+  box-sizing: border-box;
+}
+
+.gameCard {
+  width: clamp(80px,20vw,400px);
+  height: clamp(100px,25vw,500px);
+
+  font-size: clamp(10px,2vw,40px);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  align-items: center;
+  background: rgba(255,255,255,0.08);
+  border-radius: 12px;
+  padding: clamp(8px,2vw,40px);
+
+  text-align: center;
+  flex-shrink: 0;
+
+  box-sizing: border-box;
+}
+
+.gameCard img{
+  width: clamp(40px,10vw,200px);
+  height: clamp(40px,10vw,200px);
+}
+
+.win {
+  border: clamp(2px, 0.5vw, 10px) solid rgba(76,175,80,.8);
+}
+
+.loss {
+  border: clamp(2px, 0.5vw, 10px) solid rgba(231,76,60,.8);
+}
+
+.gameDate {
+  font-size: clamp(8px, 2vw, 40px);
+}
+
+.gameResult {
+  font-size: clamp(12px, 2vw, 40px);
+  font-weight: bold;
+}
+
+.gameLocation {
+  font-size: clamp(12px, 2vw, 40px);
+}
 </style>  
 </head>
 
@@ -272,6 +331,9 @@ body {
     <div id="awayLineup" class="lineup"></div>
     <div id="homeLineup" class="lineup"></div>
   </div>
+  
+  <!-- Past Games -->
+  <div id="gameHistory"></div>
 
 <script>
 async function loadScore() {
@@ -279,7 +341,7 @@ async function loadScore() {
     // ✅ Get today's game
     const today = new Date();
 
-// look ahead ~7 days
+// Game
 const future = new Date();
 future.setDate(today.getDate() + 30);
 
@@ -289,6 +351,11 @@ const res = await fetch(
   `https://statsapi.mlb.com/api/v1/schedule?sportId=11&teamId=552`
 );
     const sched = await res.json();
+    
+    const historyRes = await fetch(
+    `https://statsapi.mlb.com/api/v1/schedule?sportId=11&teamId=552&startDate=2026-03-01&endDate=${formatDate(today)}`);
+    
+    const historySched = await historyRes.json();
 
     let game = null;
 
@@ -402,7 +469,7 @@ if (!game) {
     inningEl.className = "";
 
     if (isDelayed) {
-      inningEl.innterText = status.toUpperCase();
+      inningEl.innerText = status.toUpperCase();
       inningEl.classList.add("inning-delayed");
     }
     
@@ -492,7 +559,7 @@ if (!game) {
         "P: " + m.pitcher.fullName +
         " vs B: " + m.batter.fullName;
 
-    } else if (!isLive && !isFinal) {
+    } else if (!isLive && !isFinal && !isDelayed && !isPostponed) {
       const awayP = game.teams.away.probablePitcher;
       const homeP = game.teams.home.probablePitcher;
 
@@ -590,6 +657,83 @@ if (!game) {
           game.teams.home.probablePitcher
         );
     }
+    
+    const historyEl = document.getElementById("gameHistory");
+    if (historyEl) {
+      historyEl.innerHTML = "";
+      const completedGames = [];
+      for (const date of historySched.dates || []) {
+        for (const g of date.games || []) {
+          const gameStatus = g.status.detailedState;
+          if (
+          gameStatus.includes("Final")||
+          gameStatus.includes("Game Over")
+          ) {
+            completedGames.push(g);
+          }
+        }
+      }
+    completedGames.reverse();
+      completedGames.forEach(g => 
+{
+
+    const syracuseHome =
+      g.teams.home.team.id === 552;
+
+    const opponent =
+      syracuseHome
+        ? g.teams.away.team
+        : g.teams.home.team;
+
+    const syrScore =
+      syracuseHome
+        ? g.teams.home.score
+        : g.teams.away.score;
+
+    const oppScore =
+      syracuseHome
+        ? g.teams.away.score
+        : g.teams.home.score;
+
+    const result =
+      syrScore > oppScore ? "W" : "L";
+
+    const gameDate = new Date(g.gameDate);
+
+    const dateText =
+      String(gameDate.getMonth() + 1).padStart(2, "0") +
+      "/" +
+      String(gameDate.getDate()).padStart(2, "0");
+
+    const card = document.createElement("div");
+
+    card.className =
+      "gameCard " +
+      (result === "W" ? "win" : "loss");
+
+    card.innerHTML = `
+  <div class="gameLocation">
+    ${syracuseHome ? "VS" : "@"}
+  </div>
+
+  <img
+    src="https://www.mlbstatic.com/team-logos/${opponent.id}.svg"
+  >
+
+  <div class="gameDate">${dateText}</div>
+
+  <div class="gameResult">
+    ${result} ${syrScore}-${oppScore}
+  </div>
+`;
+
+    historyEl.appendChild(card);
+
+  });
+
+}
+
+   
 
   } catch (e) {
     console.log("ERROR:", e);
