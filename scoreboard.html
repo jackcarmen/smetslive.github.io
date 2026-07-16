@@ -350,13 +350,16 @@ async function loadScore() {
     const today = new Date();
 
 // Game
+const past = new Date();
+    past.setDate(today.getDate() - 7);
+    
 const future = new Date();
 future.setDate(today.getDate() + 30);
 
 const formatDate = d => d.toISOString().split("T")[0];
 
 const res = await fetch(
-  `https://statsapi.mlb.com/api/v1/schedule?sportId=11&teamId=552`
+  `https://statsapi.mlb.com/api/v1/schedule?sportId=11&teamId=552&startDate=${formatDate(past)}&endDate=${formatDate(future)}`
 );
     const sched = await res.json();
     
@@ -365,29 +368,78 @@ const res = await fetch(
     
     const historySched = await historyRes.json();
 
-    let game = null;
+    const now = new Date();
+
+let previousGame = null;
+let nextGame = null;
+let liveGame = null;
 
 for (const date of sched.dates || []) {
-  const g = date.games;
 
-  if (g && g.length > 0) {
-    // prefer live game
-    const liveGame = g.find(gm =>
-      gm.status.detailedState.includes("In Progress")
-    );
+  for (const g of date.games || []) {
 
-    game = liveGame || g[0];
-    break;
+    const gameDate = new Date(g.gameDate);
+    const status = g.status.detailedState;
+
+    // Live game always wins
+    if (status.includes("In Progress")) {
+      liveGame = g;
+      break;
+    }
+
+    // Most recent past game
+    if (gameDate <= now) {
+      previousGame = g;
+    }
+
+    // First future game
+    if (!nextGame && gameDate > now) {
+      nextGame = g;
+    }
+
   }
+
+  if (liveGame) break;
 }
 
+console.log("Previous Game:", previousGame);
+    console.log("Next Game:", nextGame);
+    console.log("Live Game:",liveGame);
+let game = null;
+
+// Priority 1: Live game
+if (liveGame) {
+
+  game = liveGame;
+
+}
+// Priority 2: Previous game if within 24 hours
+else if (previousGame) {
+
+  const hoursSinceGame =
+    (now - new Date(previousGame.gameDate)) /
+    (1000 * 60 * 60);
+
+  if (hoursSinceGame <= 24) {
+    game = previousGame;
+  }
+  // Priority 3: Next game
+  else {
+    game = nextGame;
+  }
+
+}
+// Fallback
+else {
+
+  game = nextGame;
+
+}
 
 if (!game) {
-  console.log("No upcoming games found");
+  console.log("No game found");
   return;
 }
-
-    if (!game) return;
 
     const status = game.status.detailedState;
 
