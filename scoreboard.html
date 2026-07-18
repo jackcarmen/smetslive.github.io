@@ -407,14 +407,34 @@ console.log("Previous Game:", previousGame);
     console.log("Live Game:",liveGame);
 let game = null;
 
-// Priority 1: Live game
-if (liveGame) {
+// Find a scheduled game today
+const todayGame = (sched.dates || [])
+  .flatMap(d => d.games || [])
+  .find(g => {
+    const gameDate = new Date(g.gameDate);
 
+    return (
+      gameDate.getFullYear() === now.getFullYear() &&
+      gameDate.getMonth() === now.getMonth() &&
+      gameDate.getDate() === now.getDate() &&
+      !g.status.detailedState.includes("Final") &&
+      !g.status.detailedState.includes("Game Over")
+    );
+  });
+
+// Priority:
+// 1. Live game
+// 2. Scheduled game today
+// 3. Previous game (within 24h, only if no game today)
+// 4. Next game
+
+if (liveGame) {
   game = liveGame;
 
-}
-// Priority 2: Previous game if within 24 hours
-else if (previousGame) {
+} else if (todayGame) {
+  game = todayGame;
+
+} else if (previousGame) {
 
   const hoursSinceGame =
     (now - new Date(previousGame.gameDate)) /
@@ -422,18 +442,12 @@ else if (previousGame) {
 
   if (hoursSinceGame <= 24) {
     game = previousGame;
-  }
-  // Priority 3: Next game
-  else {
+  } else {
     game = nextGame;
   }
 
-}
-// Fallback
-else {
-
+} else {
   game = nextGame;
-
 }
 
 if (!game) {
