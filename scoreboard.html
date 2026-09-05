@@ -359,7 +359,7 @@ future.setDate(today.getDate() + 30);
 const formatDate = d => d.toISOString().split("T")[0];
 
 const res = await fetch(
-  `https://statsapi.mlb.com/api/v1/schedule?sportId=11&teamId=552&date=2026-09-03`
+  `https://statsapi.mlb.com/api/v1/schedule?sportId=11&teamId=552&startDate=${formatDate(past)}&endDate=${formatDate(future)}`
 );
     const sched = await res.json();
     
