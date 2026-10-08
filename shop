@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h1>Store Test</h1>
+
+<div id="products">Loading...</div>
+
+<script>
+document.getElementById("products").innerHTML =
+"JavaScript works!";
+</script>
+</body>
+</html>
