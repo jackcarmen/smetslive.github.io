@@ -17,21 +17,48 @@
 
       .product {
         background: rgba(255,255,255);
+        color: black;
+
+        display: flex;
+        flex-direct: column;
+
+        box-sizing: border-box;
+        height: 350px;
+        
         border-radius: 12px;
         border-color: black;
         border-width: 1px;
+        
         padding: 15px;
-        color: black;
       }
 
-      .product img {
-        width: 100%;
-        border-radius: 8px;
+      .imageContainer {
+        flex: 1;
+        display: flex;
+        align-item: center;
+        justify-content: center;
+        min-height: 0;
       }
 
+      .imageContainer img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+      }
+
+      .productInfo {
+        flex-shrink: 0;
+      }
+      
+      .productInfo h3{
+        margin: 0;
+        font-size: 16px;
+      }
+      
       .price {
         color: #f47d30;
         font-weight: bold;
+        margin-top: 6px;
       }
     </style>
   </head>
@@ -52,9 +79,11 @@
       data.products.forEach(product => {
         const image = product.images?.[0]?.src || "";
         const price = product.variants?.[0]?.price || "";
+        
         products.innerHTML += `
         <div class="product">
-        <img src="${image}">
+        <div class="imageContainer"><${image}></div>
+        <div class="productInfo">
         <h3>${product.title}</h3>
         <div class="price">
         $${price}
