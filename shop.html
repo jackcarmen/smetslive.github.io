@@ -59,6 +59,47 @@
         font-weight: bold;
         margin-top: 6px;
       }
+
+      #productDetail {
+        background: white;
+        color: black;
+      
+        border-radius: 12px;
+        padding: 20px;
+      }
+      
+      #productDetail img {
+        width: 100%;
+        max-height: 500px;
+        object-fit: contain;
+      }
+      
+      .detailPrice {
+        color: #f47d30;
+        font-size: 24px;
+        font-weight: bold;
+        margin: 10px 0;
+      }
+      
+      .backButton,
+      .buyButton {
+        border: none;
+        border-radius: 8px;
+        padding: 12px 20px;
+        cursor: pointer;
+        font-size: 16px;
+      }
+      
+      .backButton {
+        background: #ddd;
+        margin-bottom: 20px;
+      }
+      
+      .buyButton {
+        background: #f47d30;
+        color: white;
+        margin-top: 20px;
+      }
     </style>
   </head>
 <body>
@@ -67,16 +108,78 @@
 
   <div id="products"></div>
 
+  <div id="productDetail" style="display:none;"></div>
+
   <script>
 
+    let allProducts = [];
+
+function showProduct(index) {
+
+  const product = allProducts[index];
+
+  const image =
+    product.images?.[0]?.src || "";
+
+  const price =
+    product.variants?.[0]?.price || "";
+
+  const description =
+    product.body_html || "";
+
+  const productUrl =
+    "https://milbshop.com/products/" +
+    product.handle;
+
+  document.getElementById("products").style.display = "none";
+
+  const detail =
+    document.getElementById("productDetail");
+
+  detail.style.display = "block";
+
+  detail.innerHTML = `
+    <button class="backButton" onclick="goBack()">
+      ← Back
+    </button>
+
+    ${image}
+
+    <h2>${product.title}</h2>
+
+    <div class="detailPrice">
+      $${price}
+    </div>
+
+    <div>
+      ${description}
+    </div>
+
+    ${productUrl}
+      <button class="buyButton">
+        Buy Now
+      </button>
+    </a>
+  `;
+}
+
+function goBack() {
+
+  document.getElementById("productDetail").style.display = "none";
+
+  document.getElementById("products").style.display = "grid";
+
+}
+    
     fetch("https://milbshop.com/collections/syracuse/products.json?limit=300")
   .then(r => r.json())
   .then(data => {
-
+allProducts = data.products;
+    
     const products =
       document.getElementById("products");
 
-    data.products.forEach(product => {
+    data.products.forEach((product,index) => {
 
       const image =
         product.images?.[0]?.src || "";
@@ -85,7 +188,9 @@
         product.variants?.[0]?.price || "";
 
       products.innerHTML += `
-        <div class="product">
+        <div class="product"
+        onclick="showProduct(${index})"
+        style="cursor:pointer;">
 
           <div class="imageContainer">
           <img src="${image}" alt="${product.title}">
