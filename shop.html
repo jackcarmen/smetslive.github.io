@@ -257,6 +257,7 @@ color: white;
         "https://milbshop.com/products/" + product.handle;
 
       document.getElementById("products").style.display = "none";
+      document.querySelector("h1").style.display = "none";
       document.getElementById("filters").style.display = "none";
 
       const detail = document.getElementById("productDetail");
@@ -311,6 +312,7 @@ color: white;
     function goBack() {
       document.getElementById("productDetail").style.display = "none";
       document.getElementById("products").style.display = "grid";
+      document.querySelector("h1").style.display = "block";
       document.getElementById("filters").style.display = "block";
 
       window.scrollTo({
