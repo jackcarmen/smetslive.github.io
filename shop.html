@@ -1,14 +1,65 @@
 <!DOCTYPE html>
 <html>
+  <head>
+    <style>
+      body {
+        background: #004b8d;
+        color: white;
+        font-family: Arial;
+        margin: 20px;
+      }
+
+      #products {
+        display: grid;
+        grid-template-columns: repeat(auto-fill,minmax(250px,1fr));
+        gap: 20px;
+      }
+
+      .product {
+        background: rgba(255,255,255,.08);
+        border-radius: 12px;
+        padding: 15px;
+      }
+
+      .product img {
+        width: 100%;
+        border-radius: 8px;
+      }
+
+      .price {
+        color: #f47d30;
+        font-weight: bold;
+      }
+    </style>
+  </head>
 <body>
 
-<h1>Store Test</h1>
+  <h1>Shop Syracuse Mets Merchandise</h1>
 
-<div id="products">Loading...</div>
+  <div id="products"></div>
 
-<script>
-document.getElementById("products").innerHTML =
-"JavaScript works!";
-</script>
+  <script>
+
+    fetch("https://milbshop.com/collections/syracuse/products.json?limit=10")
+    .then(r => r.json())
+    .then(data => {
+      const products = 
+        document.getElementById("products");
+
+      data.products.forEach(product => {
+        const image = product.images?.[0]?.src || "";
+        const price = product.variants?.[0]?.price || "";
+        products.innerHTML += `
+        <div class="product">
+        <img src="${image}">
+        <h3>${product.title}</h3>
+        <div class="price">
+        $${price}
+        </div>
+        </div>`;
+      });
+    });
+  </script>
 </body>
+  
 </html>
