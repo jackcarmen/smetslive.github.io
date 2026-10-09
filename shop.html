@@ -218,8 +218,7 @@ function showProduct(index) {
     <div class="detailImageContainer">
       ${
         image
-          ? `${image}
-            `
+          ? `<img class="detailImage" src="${image}" alt="${product.title}">`
           : "<p>Product image unavailable</p>"
       }
     </div>
@@ -234,7 +233,11 @@ function showProduct(index) {
       ${description}
     </div>
 
-    ${productUrl}
+    <a
+    href = "${productUrl}"
+    target="_blank"
+    rel="noopener noreferrer"
+    class="buyButton">
       Buy Now
     </a>
 
@@ -364,8 +367,7 @@ function renderProducts(productsToRender) {
       <div class="imageContainer">
         ${
           image
-            ? `${image}
-              `
+            ? `<img src="${image}" alt="${product.title}">`
             : "<p>Image unavailable</p>"
         }
       </div>
