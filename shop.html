@@ -80,17 +80,22 @@
         const price = product.variants?.[0]?.price || "";
         
         products.innerHTML += `
-        <div class="product">
-        <div class="imageContainer">
-          ${image}
-        </div>
-        <div class="productInfo">
-        <h3>${product.title}</h3>
-        <div class="price">
+  <div class="product">
+
+    <div class="imageContainer">
+      ${image}
+    </div>
+
+    <div class="productInfo">
+      <h3>${product.title}</h3>
+
+      <div class="price">
         $${price}
-        </div>
-        </div>
-        </div>`;
+      </div>
+    </div>
+
+  </div>
+`;
       });
     });
   </script>
