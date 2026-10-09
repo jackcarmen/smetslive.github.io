@@ -10,26 +10,83 @@
     }
 
     #filters {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 20px;
-    }
-    
-    .filterBtn {
-      background: white;
-      color: black;
-      border: 2px solid black;
-      border-radius: 20px;
-      padding: 8px 16px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    
-    .filterBtn:hover {
-      background: #f47d30;
-      color: white;
-    }
+position: relative;
+width: 100%;
+max-width: 300px;
+margin-bottom: 20px;
+}
+
+.filterDropdown {
+position: relative;
+width: 100%;
+}
+
+.filterToggle {
+display: flex;
+align-items: center;
+justify-content: space-between;
+width: 100%;
+padding: 12px 16px;
+background: white;
+color: black;
+border: 2px solid black;
+border-radius: 8px;
+font-size: 16px;
+font-weight: bold;
+text-align: left;
+cursor: pointer;
+}
+
+.filterArrow {
+margin-left: 12px;
+transition: transform 0.2s ease;
+}
+
+.filterDropdown.open .filterArrow {
+transform: rotate(180deg);
+}
+
+.filterOptions {
+display: none;
+position: absolute;
+top: calc(100% + 4px);
+left: 0;
+width: 100%;
+background: white;
+border: 2px solid black;
+border-radius: 8px;
+overflow: hidden;
+box-sizing: border-box;
+z-index: 100;
+}
+
+.filterDropdown.open .filterOptions {
+display: block;
+}
+
+.filterOption {
+display: block;
+width: 100%;
+padding: 12px 16px;
+background: white;
+color: black;
+border: none;
+border-bottom: 1px solid #ddd;
+font-size: 15px;
+text-align: left;
+cursor: pointer;
+box-sizing: border-box;
+}
+
+.filterOption:last-child {
+border-bottom: none;
+}
+
+.filterOption:hover,
+.filterOption.active {
+background: #f47d30;
+color: white;
+}
     
     #products {
       display: grid;
@@ -181,156 +238,165 @@
   <div id="productDetail"></div>
 
   <script>
-    
-    
-   let allProducts = [];
+    let allProducts = [];
 
 // ======================
 // PRODUCT DETAILS
 // ======================
 
 function showProduct(index) {
+const product = allProducts[index];
 
-  const product = allProducts[index];
+if (!product) return;
 
-  if (!product) return;
+const image = product.images?.[0]?.src || “”;
+const price = product.variants?.[0]?.price || “”;
+const description = product.body_html || “”;
 
-  const image = product.images?.[0]?.src || "";
-  const price = product.variants?.[0]?.price || "";
-  const description = product.body_html || "";
+const productUrl =
+“https://milbshop.com/products/” + product.handle;
 
-  const productUrl =
-    "https://milbshop.com/products/" +
-    product.handle;
+document.getElementById(“products”).style.display = “none”;
+document.getElementById(“filters”).style.display = “none”;
 
-  document.getElementById("products").style.display = "none";
+const detail = document.getElementById(“productDetail”);
+detail.style.display = “block”;
 
-  const detail =
-    document.getElementById("productDetail");
+detail.innerHTML = `
+← Back to Products
+<div class="detailImageContainer">
+  ${
+    image
+      ? `<img class="detailImage" src="${image}" alt="${product.title}">`
+      : "<p>Product image unavailable</p>"
+  }
+</div>
+<h2>${product.title}</h2>
+<div class="detailPrice">
+  $${price}
+</div>
+<div class="detailDescription">
+  ${description}
+</div>
+<a
+  href="${productUrl}"
+  target="_blank"
+  rel="noopener noreferrer"
+  class="buyButton"
+>
+  Buy Now
+</a>
+<div class="contactInfo">
+  Questions? Email
+  <a href="mailto:cchawgo@syracusemets.com">
+    cchawgo@syracusemets.com
+  </a>
+</div>
 
-  detail.style.display = "block";
+`;
 
-  detail.innerHTML = `
-    <button class="backButton" onclick="goBack()">
-      ← Back to Products
-    </button>
-
-    <div class="detailImageContainer">
-      ${
-        image
-          ? `<img class="detailImage" src="${image}" alt="${product.title}">`
-          : "<p>Product image unavailable</p>"
-      }
-    </div>
-
-    <h2>${product.title}</h2>
-
-    <div class="detailPrice">
-      $${price}
-    </div>
-
-    <div class="detailDescription">
-      ${description}
-    </div>
-
-    <a
-    href = "${productUrl}"
-    target="_blank"
-    rel="noopener noreferrer"
-    class="buyButton">
-      Buy Now
-    </a>
-
-    <div class="contactInfo">
-      Questions? Email
-      <a href="mailto:cchawgo@syracusemets.com">
-        cchawgo@syracusemets.com
-      </a>
-    </div>
-  `;
-
-  window.scrollTo({
-    top: 0,
-    behavior: "smooth"
-  });
+window.scrollTo({
+top: 0,
+behavior: “smooth”
+});
 }
 
 function goBack() {
+document.getElementById(“productDetail”).style.display = “none”;
+document.getElementById(“products”).style.display = “grid”;
+document.getElementById(“filters”).style.display = “block”;
 
-  document.getElementById("productDetail").style.display = "none";
-
-  document.getElementById("products").style.display = "grid";
-
-  window.scrollTo({
-    top: 0,
-    behavior: "smooth"
-  });
-
+window.scrollTo({
+top: 0,
+behavior: “smooth”
+});
 }
 
 // ======================
-// FILTERS
+// FILTER DROPDOWN
 // ======================
 
 function buildFilters() {
+const filters = document.getElementById(“filters”);
 
-  const filters =
-    document.getElementById("filters");
+filters.innerHTML = “”;
 
-  filters.innerHTML = "";
+const dropdown = document.createElement(“div”);
+dropdown.className = “filterDropdown”;
 
-  // ALL button
+const toggle = document.createElement(“button”);
+toggle.className = “filterToggle”;
+toggle.type = “button”;
 
-  const allBtn =
-    document.createElement("button");
+toggle.innerHTML = <span id="filterLabel">Filter: All</span> <span class="filterArrow">▼</span>;
 
-  allBtn.className = "filterBtn";
-  allBtn.textContent = "All";
+const options = document.createElement(“div”);
+options.className = “filterOptions”;
 
-  allBtn.onclick = () =>
-    filterProducts("all");
+const productTypes = [
+“All”,
+…new Set(
+allProducts
+.map(product => product.product_type)
+.filter(Boolean)
+.sort((a, b) => a.localeCompare(b))
+)
+];
 
-  filters.appendChild(allBtn);
+productTypes.forEach(type => {
+const button = document.createElement(“button”);
 
-  const productTypes =
-    [...new Set(
-      allProducts
-        .map(p => p.product_type)
-        .filter(Boolean)
-    )]
-    .sort();
-
-  productTypes.forEach(type => {
-
-    const button =
-      document.createElement("button");
-
-    button.className = "filterBtn";
-    button.textContent = type;
-
-    button.onclick = () =>
-      filterProducts(type);
-
-    filters.appendChild(button);
-
+button.className = "filterOption";
+button.type = "button";
+button.textContent = type;
+if (type === "All") {
+  button.classList.add("active");
+}
+button.onclick = () => {
+  filterProducts(type);
+  document.getElementById("filterLabel").textContent =
+    `Filter: ${type}`;
+  options.querySelectorAll(".filterOption").forEach(option => {
+    option.classList.remove("active");
   });
+  button.classList.add("active");
+  dropdown.classList.remove("open");
+};
+options.appendChild(button);
 
+});
+
+toggle.onclick = () => {
+dropdown.classList.toggle(“open”);
+};
+
+// Close dropdown when clicking outside
+document.addEventListener(“click”, event => {
+if (!dropdown.contains(event.target)) {
+dropdown.classList.remove(“open”);
+}
+});
+
+dropdown.appendChild(toggle);
+dropdown.appendChild(options);
+filters.appendChild(dropdown);
 }
 
+// ======================
+// FILTER PRODUCTS
+// ======================
+
 function filterProducts(type) {
+if (type === “All”) {
+renderProducts(allProducts);
+return;
+}
 
-  if (type === "all") {
-    renderProducts(allProducts);
-    return;
-  }
+const filtered = allProducts.filter(product =>
+product.product_type === type
+);
 
-  const filtered =
-    allProducts.filter(product =>
-      product.product_type === type
-    );
-
-  renderProducts(filtered);
-
+renderProducts(filtered);
 }
 
 // ======================
@@ -338,95 +404,67 @@ function filterProducts(type) {
 // ======================
 
 function renderProducts(productsToRender) {
+const products = document.getElementById(“products”);
 
-  const products =
-    document.getElementById("products");
+products.innerHTML = “”;
 
-  products.innerHTML = "";
+productsToRender.forEach(product => {
+const image = product.images?.[0]?.src || “”;
+const price = product.variants?.[0]?.price || “”;
+const index = allProducts.indexOf(product);
 
-  productsToRender.forEach(product => {
+const card = document.createElement("div");
+card.className = "product";
+card.onclick = () => showProduct(index);
+card.innerHTML = `
+  <div class="imageContainer">
+    ${
+      image
+        ? `<img src="${image}" alt="${product.title}">`
+        : "<p>Image unavailable</p>"
+    }
+  </div>
+  <div class="productInfo">
+    <h3>${product.title}</h3>
+    <div class="price">
+      $${price}
+    </div>
+  </div>
+`;
+products.appendChild(card);
 
-    const image =
-      product.images?.[0]?.src || "";
-
-    const price =
-      product.variants?.[0]?.price || "";
-
-    const index =
-      allProducts.indexOf(product);
-
-    const card =
-      document.createElement("div");
-
-    card.className = "product";
-
-    card.onclick = () =>
-      showProduct(index);
-
-    card.innerHTML = `
-      <div class="imageContainer">
-        ${
-          image
-            ? `<img src="${image}" alt="${product.title}">`
-            : "<p>Image unavailable</p>"
-        }
-      </div>
-
-      <div class="productInfo">
-
-        <h3>${product.title}</h3>
-
-        <div class="price">
-          $${price}
-        </div>
-
-      </div>
-    `;
-
-    products.appendChild(card);
-
-  });
-
+});
 }
 
 // ======================
 // LOAD PRODUCTS
 // ======================
 
-fetch("https://milbshop.com/collections/syracuse/products.json?limit=300")
-  .then(response => {
+fetch(“https://milbshop.com/collections/syracuse/products.json?limit=300”)
+.then(response => {
+if (!response.ok) {
+throw new Error(
+“Unable to load products: “ + response.status
+);
+}
 
-    if (!response.ok) {
-      throw new Error(
-        "Unable to load products: " +
-        response.status
-      );
-    }
+return response.json();
 
-    return response.json();
+})
+.then(data => {
+allProducts = data.products || [];
 
-  })
-  .then(data => {
+buildFilters();
+renderProducts(allProducts);
 
-    allProducts =
-      data.products || [];
+})
+.catch(error => {
+console.error(“Error loading products:”, error);
 
-    buildFilters();
+document.getElementById("products").innerHTML =
+  "<p>Sorry, merchandise could not be loaded. Please try again later.</p>";
 
-    renderProducts(allProducts);
-
-  })
-  .catch(error => {
-
-    console.error(
-      "Error loading products:",
-      error
-    );
-
-    document.getElementById("products").innerHTML =
-      "<p>Sorry, merchandise could not be loaded. Please try again later.</p>";
-
-  });
+});
   </script>
 
 </body>
