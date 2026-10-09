@@ -70,34 +70,46 @@
   <script>
 
     fetch("https://milbshop.com/collections/syracuse/products.json?limit=10")
-    .then(r => r.json())
-    .then(data => {
-      const products = 
-        document.getElementById("products");
+  .then(r => r.json())
+  .then(data => {
 
-      data.products.forEach(product => {
-        const image = product.images?.[0]?.src || "";
-        const price = product.variants?.[0]?.price || "";
-        
-        products.innerHTML += `
-  <div class="product">
+    const products =
+      document.getElementById("products");
 
-    <div class="imageContainer">
-      ${image}
-    </div>
+    data.products.forEach(product => {
 
-    <div class="productInfo">
-      <h3>${product.title}</h3>
+      const image =
+        product.images?.[0]?.src || "";
 
-      <div class="price">
-        $${price}
-      </div>
-    </div>
+      const price =
+        product.variants?.[0]?.price || "";
 
-  </div>
-`;
-      });
+      products.innerHTML += `
+        <div class="product">
+
+          <div class="imageContainer">
+            ${image}
+          </div>
+
+          <div class="productInfo">
+
+            <h3>${product.title}</h3>
+
+            <div class="price">
+              $${price}
+            </div>
+
+          </div>
+
+        </div>
+      `;
+
     });
+
+  })
+  .catch(error => {
+    console.log(error);
+  });
   </script>
 </body>
   
