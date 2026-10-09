@@ -470,11 +470,16 @@ color: white;
         return response.json();
       })
       .then(data => {
-        allProducts = data.products || [];
+  const products = data.products || [];
 
-        buildFilters();
-        renderProducts(allProducts);
-      })
+  // Keep only products with at least one available variant
+  allProducts = products.filter(product =>
+    product.variants?.some(variant => variant.available === true)
+  );
+
+  buildFilters();
+  renderProducts(allProducts);
+})
       .catch(error => {
         console.error("Error loading products:", error);
 
