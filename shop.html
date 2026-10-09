@@ -20,14 +20,13 @@
         color: black;
 
         display: flex;
-        flex-direct: column;
+        flex-direction: column;
 
         box-sizing: border-box;
         height: 350px;
         
         border-radius: 12px;
-        border-color: black;
-        border-width: 1px;
+        border: 1ps solid black;
         
         padding: 15px;
       }
@@ -35,7 +34,7 @@
       .imageContainer {
         flex: 1;
         display: flex;
-        align-item: center;
+        align-items: center;
         justify-content: center;
         min-height: 0;
       }
@@ -82,11 +81,12 @@
         
         products.innerHTML += `
         <div class="product">
-        <div class="imageContainer"><${image}></div>
+        <div class="imageContainer">${image}</div>
         <div class="productInfo">
         <h3>${product.title}</h3>
         <div class="price">
         $${price}
+        </div>
         </div>
         </div>`;
       });
